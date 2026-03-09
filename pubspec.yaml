@@ -14,7 +14,7 @@ dependencies:
   cubit_ui_flow:
     git: 
       url: https://github.com/qtpi-bonding-org/flutter_cubit_ui_flow.git
-      ref: 737f24b
+      ref: 6692e2d
   flutter_bloc: ^8.1.0
   uuid: ^4.0.0
   crypto: ^3.0.0

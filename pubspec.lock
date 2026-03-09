@@ -61,9 +61,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "737f24b"
-      resolved-ref: "737f24bb8d5ebdbe9c6479f00655771bed623eb6"
-      url: "git@github.com:qtpi-bonding-org/flutter_cubit_ui_flow.git"
+      ref: "6692e2d"
+      resolved-ref: "6692e2d95d0bcdae59e2b9096a39c3b582807516"
+      url: "https://github.com/qtpi-bonding-org/flutter_cubit_ui_flow.git"
     source: git
     version: "0.1.0"
   fake_async:
