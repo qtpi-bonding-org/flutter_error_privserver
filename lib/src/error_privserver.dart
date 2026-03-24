@@ -59,6 +59,47 @@ class ErrorPrivserver {
     return await config.reporter(errorBoxEntry.errorData);
   }
 
+  /// Capture an error from non-cubit code (services, repositories, background workers).
+  ///
+  /// Stores the error in the Error Box for developer review without triggering
+  /// any UI state change or toast. This is the service-layer equivalent of
+  /// [ErrorPrivserverMixin]'s automatic capture in cubits.
+  ///
+  /// No-op if not configured. Never throws — error capture must never crash the app.
+  ///
+  /// ```dart
+  /// } catch (e, stack) {
+  ///   debugPrint('E2EEPuller: decryption failed: $e');
+  ///   await ErrorPrivserver.captureError(e, stack, source: 'E2EEPuller');
+  /// }
+  /// ```
+  static Future<void> captureError(
+    Object error,
+    StackTrace stackTrace, {
+    required String source,
+  }) async {
+    final config = ErrorPrivserverMixin.config;
+    if (config == null) return;
+
+    try {
+      final messageKey = config.exceptionMapper(error);
+      final errorCode = config.errorCodeMapper(error);
+
+      final errorEntry = ErrorEntry(
+        source: source,
+        errorType: error.runtimeType.toString(),
+        errorCode: errorCode,
+        stackTrace: stackTrace.toString(),
+        timestamp: DateTime.now(),
+        userMessage: messageKey?.key,
+      );
+
+      await config.storage.saveError(errorEntry);
+    } catch (e) {
+      debugPrint('ErrorPrivserver: Failed to capture error: $e');
+    }
+  }
+
   /// Send all unsent errors to the server (send only, does not mark as sent).
   ///
   /// Returns the list of error IDs that were successfully sent.
