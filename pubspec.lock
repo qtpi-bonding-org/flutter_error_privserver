@@ -61,8 +61,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "1d31dce6ab6753a58c230586660b301daf851ec6"
-      resolved-ref: "1d31dce6ab6753a58c230586660b301daf851ec6"
+      ref: "78ca8da8b52bd750c96443bcefe3ed1edcda5a52"
+      resolved-ref: "78ca8da8b52bd750c96443bcefe3ed1edcda5a52"
       url: "https://github.com/qtpi-bonding-org/flutter_cubit_ui_flow.git"
     source: git
     version: "0.2.0"

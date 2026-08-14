@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cubit_ui_flow/cubit_ui_flow.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../config/error_privserver_config.dart';
 import '../models/error_entry.dart';
 
-/// Mixin that adds privacy-preserving error capture to any Cubit.
+/// Mixin that adds privacy-preserving error capture to any [TryOperationCubit].
 ///
-/// Applied to any Cubit using IUiFlowState. Automatically captures errors
-/// from [tryOperation] and stores them locally for user review. No data is
-/// sent to servers without explicit user consent.
+/// Hooks [TryOperationCubit.onOperationError] rather than re-implementing
+/// [TryOperationCubit.tryOperation]'s try/catch/emit control flow — the
+/// error state has already been emitted by the time this mixin sees the
+/// error; it only adds the capture side effect on top.
 ///
 /// Privacy is ensured by only capturing:
 /// - Error types (e.g., "NetworkException")
@@ -25,7 +25,7 @@ import '../models/error_entry.dart';
 ///   MyCubit() : super(MyState.initial());
 /// }
 /// ```
-mixin ErrorPrivserverMixin<S extends IUiFlowState> on Cubit<S> {
+mixin ErrorPrivserverMixin<S extends IUiFlowState> on TryOperationCubit<S> {
   static ErrorPrivserverConfig? _config;
 
   /// Configure the error privacy server.
@@ -38,36 +38,10 @@ mixin ErrorPrivserverMixin<S extends IUiFlowState> on Cubit<S> {
   /// Get the current configuration.
   static ErrorPrivserverConfig? get config => _config;
 
-  /// Enhanced tryOperation with automatic error capture.
-  Future<void> tryOperation(
-    FutureOr<S> Function() action, {
-    bool emitLoading = false,
-  }) async {
-    try {
-      if (emitLoading) {
-        emit(_createLoadingState());
-      }
-      final successState = await action();
-      emit(successState);
-    } catch (error, stackTrace) {
-      final errorState = _createErrorState(error);
-      emit(errorState);
-      await _captureError(error, stackTrace);
-    }
-  }
-
-  S _createLoadingState() {
-    return (state as dynamic).copyWith(
-      status: UiFlowStatus.loading,
-      error: null,
-    ) as S;
-  }
-
-  S _createErrorState(Object error) {
-    return (state as dynamic).copyWith(
-      status: UiFlowStatus.failure,
-      error: error,
-    ) as S;
+  @override
+  void onOperationError(Object error, StackTrace stackTrace) {
+    super.onOperationError(error, stackTrace);
+    unawaited(_captureError(error, stackTrace));
   }
 
   Future<void> _captureError(Object error, StackTrace? stackTrace) async {
